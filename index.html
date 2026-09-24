@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      (function() {
+        try {
+          var targetWindow = typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null);
+          if (!targetWindow) return;
+
+          var origFetch = targetWindow.fetch;
+          var storedFetch = typeof origFetch === 'function' ? function() { return origFetch.apply(targetWindow, arguments); } : origFetch;
+
+          // 1. Traverse and patch prototype chain (Window.prototype, WindowProperties, EventTarget, etc.)
+          var curr = targetWindow;
+          while (curr) {
+            try {
+              var desc = Object.getOwnPropertyDescriptor(curr, 'fetch');
+              if (desc && (desc.get || !desc.writable)) {
+                Object.defineProperty(curr, 'fetch', {
+                  configurable: true,
+                  enumerable: true,
+                  get: function() { return storedFetch; },
+                  set: function(v) { storedFetch = v; }
+                });
+              }
+            } catch (err) {}
+            try {
+              curr = Object.getPrototypeOf(curr);
+            } catch (err) {
+              break;
+            }
+          }
+
+          // 2. Explicitly ensure Window.prototype has getter and setter
+          if (typeof Window !== 'undefined' && Window.prototype) {
+            try {
+              Object.defineProperty(Window.prototype, 'fetch', {
+                configurable: true,
+                enumerable: true,
+                get: function() { return storedFetch; },
+                set: function(v) { storedFetch = v; }
+              });
+            } catch (err) {}
+          }
+
+          // 3. Define on targetWindow directly with getter and setter
+          try {
+            Object.defineProperty(targetWindow, 'fetch', {
+              configurable: true,
+              enumerable: true,
+              get: function() { return storedFetch; },
+              set: function(v) { storedFetch = v; }
+            });
+          } catch (err) {
+            try {
+              targetWindow.fetch = storedFetch;
+            } catch (err2) {}
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><polygon points='5 3 19 12 5 21 5 3'/></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GameMatch AI - Personalized Game Recommendation Platform</title>
+    <meta name="description" content="AI-powered personalized game advisor and Steam recommendation engine with teammate finder and gamer profiles." />
+    <meta property="og:title" content="GameMatch AI - Personalized Game Recommendation Platform" />
+    <meta property="og:description" content="AI-powered personalized game advisor and Steam recommendation engine with teammate finder and gamer profiles." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,600;0,700;1,700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-[#0b0e14] text-slate-100 min-h-screen antialiased selection:bg-indigo-500 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

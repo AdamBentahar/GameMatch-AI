@@ -1,0 +1,7 @@
+{
+  "name": "GameMatch AI - Personalized Game Recommendation Platform",
+  "description": "AI-powered personalized game advisor and Steam recommendation engine with teammate finder and gamer profiles.",
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
